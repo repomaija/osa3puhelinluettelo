@@ -1,12 +1,15 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
+const mongoose = require('mongoose')
+const Person = require('./models/person')
 const app = express()
 
 app.use(cors())
 app.use(express.static('dist'))
-
 app.use(express.json())
+
 morgan.token('body', (req, res) => {
     if(req.method === "POST") {
         return JSON.stringify(req.body)
@@ -14,28 +17,7 @@ morgan.token('body', (req, res) => {
 })
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-let persons = [
-    {
-        id: 1,
-        name: "Pekka",
-        number: "123456"
-    },
-    {
-        id: 2,
-        name: "Keke from Backend",
-        number: "124453456"
-    },
-    {
-        id: 3,
-        name: "Jykä",
-        number: "13423456"
-    },
-    {
-        id: 4,
-        name: "Maukka",
-        number: "127773456"
-    }
-]
+
 
 
 const generateId  = (min, max)=> {
@@ -49,21 +31,27 @@ app.get('/', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-    response.json(persons)
+    Person.find({}).then(persons => {
+        response.json(persons)
+    })
 })
 
 app.get('/api/info', (request, response) => {
-    response.send(`<p>Phonebook has info for ${persons.length} persons</p><p>${new Date().toString()}</p>`)
+    Person.find({}).then(persons => {
+        response.send(`<p>Phonebook has info for ${persons.length} persons</p><p>${new Date().toString()}</p>`)
+    })
 })
 
 app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const person = persons.find(p => p.id === id)
-    if (person) {
-        response.json(person)
-    } else {
-        response.status(404).end()
-    }
+    const id = request.params.id
+    Person.findById(id).then(person => {
+
+        if (person) {
+            response.json(person)
+        } else {
+            response.status(404).end()
+        }
+    })
 })
 
 app.post('/api/persons', (request, response) => {
@@ -89,8 +77,13 @@ app.post('/api/persons', (request, response) => {
     }
 
     persons = persons.concat(person)
-    console.log(person)
+    console.log('personi', person)
     response.json(person)
+
+    /*person.save().then(savedPerson => {
+        response.json(savedPerson)
+    })*/
+
 })
 
 app.delete('/api/persons/:id', (request, response) => {
@@ -100,7 +93,7 @@ app.delete('/api/persons/:id', (request, response) => {
     response.status(204).end()
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
