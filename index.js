@@ -19,7 +19,6 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :b
 
 
 
-
 const generateId  = (min, max)=> {
     const minCeiled = Math.ceil(min);
     const maxFloored = Math.floor(max);
@@ -63,26 +62,22 @@ app.post('/api/persons', (request, response) => {
             error: 'name or number missing'
         })
     }
-    const alreadyFound = persons.find(p => p.name === body.name)
+    /*const alreadyFound = persons.find(p => p.name === body.name)
     if (alreadyFound) {
         return response.status(400).json({
             error: 'name already exists'
         })
-    }
+    }*/
 
-    const person = {
+    const person = new Person({
         name: body.name,
         number: body.number,
-        id: generateId(0,9999999999)
-    }
+        //id: generateId(0,9999999999)
+    })
 
-    persons = persons.concat(person)
-    console.log('personi', person)
-    response.json(person)
-
-    /*person.save().then(savedPerson => {
+    person.save().then(savedPerson => {
         response.json(savedPerson)
-    })*/
+    })
 
 })
 
