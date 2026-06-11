@@ -61,23 +61,32 @@ app.post('/api/persons', (request, response, next) => {
             error: 'name or number missing'
         })
     }
-    /*const alreadyFound = persons.find(p => p.name === body.name)
-    if (alreadyFound) {
-        return response.status(400).json({
-            error: 'name already exists'
+    
+    Person.findOne({ name: body.name })
+        .then(existingPerson => {
+
+            if (existingPerson) {
+
+                
+                existingPerson.number = body.number
+
+                return existingPerson.save()
+                    .then(updatedPerson => {
+                        response.json(updatedPerson)
+                    })
+            }
+
+            const person = new Person({
+                name: body.name,
+                number: body.number
+            })
+
+            return person.save()
+                .then(savedPerson => {
+                    response.json(savedPerson)
+                })
         })
-    }*/
-
-    const person = new Person({
-        name: body.name,
-        number: body.number,
-        //id: generateId(0,9999999999)
-    })
-
-    person.save().then(savedPerson => {
-        response.json(savedPerson)
-    })
-    .catch(error => next(error))
+        .catch(error => next(error))
 
 })
 
